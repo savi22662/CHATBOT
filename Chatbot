@@ -1,0 +1,39 @@
+from flask import Flask, request
+from twilio.twiml.messaging_response import MessagingResponse
+import os
+
+# Ensure required packages are installed
+try:
+    import flask
+    import twilio
+except ImportError:
+    os.system('pip install flask twilio')
+
+app = Flask(__name__)
+
+@app.route("/whatsapp", methods=["POST"])
+def whatsapp_bot():
+    incoming_msg = request.values.get("Body", "").strip().lower()
+    resp = MessagingResponse()
+    msg = resp.message()
+    
+    if incoming_msg in ["hi", "hello"]:
+        msg.body("\U0001F44B Hi! Welcome to BBQ Nation \U0001F356. Want to book a table? Reply with:\n1️⃣ 'Yes' - Show available slots\n2️⃣ 'Offers' - See today's special offers\n3️⃣ 'Talk' - Connect with a representative")
+    elif incoming_msg == "1" or incoming_msg == "yes":
+        msg.body("\U0001F4C5 Available slots today:\n- 12:30 PM\n- 2:00 PM\n- 7:30 PM\nReply with your preferred time to confirm.")
+    elif incoming_msg == "2" or incoming_msg == "offers":
+        msg.body("🔥 Today's Special Offer: Flat 10% off if you book within 15 minutes! \nReply 'Book' to confirm your reservation.")
+    elif incoming_msg == "3" or incoming_msg == "talk":
+        msg.body("\U0001F4DE Connecting you with a representative... Please wait.")
+    elif "book" in incoming_msg:
+        msg.body("✅ Your table has been booked successfully! \n📍 Location: https://goo.gl/maps/example \n💳 Payment options available via WhatsApp.\nReply 'Pay' to proceed with payment.")
+    elif "pay" in incoming_msg:
+        msg.body("💳 Secure Payment Link: https://paymentgateway.com/example \nThank you for dining with BBQ Nation!")
+    else:
+        msg.body("Sorry, I didn't understand that. Please reply with 1️⃣, 2️⃣, or 3️⃣ to proceed.")
+    
+    return str(resp)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
